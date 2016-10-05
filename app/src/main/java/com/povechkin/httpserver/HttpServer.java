@@ -48,30 +48,10 @@ public class HttpServer extends NanoHTTPD {
     }
 
     Response successResponse(){
-        return newFixedLengthResponse(new Response.IStatus() {
-            @Override
-            public String getDescription() {
-                return "success";
-            }
-
-            @Override
-            public int getRequestStatus() {
-                return 0;
-            }
-        }, MIME_PLAINTEXT, "success");
+        return newFixedLengthResponse("{\"code\": 0}");
     }
     Response unsuccessResponse(final String errorMsg){
-        return newFixedLengthResponse(new Response.IStatus() {
-            @Override
-            public String getDescription() {
-                return errorMsg;
-            }
-
-            @Override
-            public int getRequestStatus() {
-                return 1;
-            }
-        }, MIME_PLAINTEXT, errorMsg);
+        return newFixedLengthResponse("{\"code\": 1, \"message\": \""+errorMsg+"\"}");
     }
 
     interface IRequestCallback {

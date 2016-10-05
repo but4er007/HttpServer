@@ -41,7 +41,7 @@ public class FullscreenActivity extends AppCompatActivity {
     private static final int UI_ANIMATION_DELAY = 300;
     private final Handler mHideHandler = new Handler();
     private View mContentView;
-    private WebView webView;
+    private MyWebView webView;
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
         @Override
@@ -90,8 +90,25 @@ public class FullscreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_fullscreen);
 
         mContentView = findViewById(R.id.web_view);
-        webView = (WebView)findViewById(R.id.web_view);
-        webView.setWebViewClient(new WebViewClient());
+        webView = (MyWebView)findViewById(R.id.web_view);
+        webView.setWebViewClient(new WebViewClient(){
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView  view, String  url){
+                return true;
+            }
+            @Override
+            public void onLoadResource(WebView  view, String  url){
+                if( url.equals("http://yoururl.com") ){
+                    // do something
+                }
+            }
+        });
+        webView.setOnPostRequest(new MyWebView.IOnPostRequest() {
+            @Override
+            public void onPost(String url) {
+                isBusy = false;
+            }
+        });
     }
     @Override
     public void onStart(){
@@ -104,13 +121,27 @@ public class FullscreenActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void openAnketForm(String shop, String id_seller, String id_client) {
-                    webView.loadUrl("https://www.sportmaster.ru/user/session/pda/register.do?shop="+shop+"&id_client="+id_client+"&id_seller="+id_seller);
+                public void openAnketForm(final String shop, final String id_seller, final String id_client) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d(TAG, "openAnket");
+                            webView.loadUrl("https://www.sportmaster.ru/user/session/pda/register.do?shop="+shop+"&id_client="+id_client+"&id_seller="+id_seller);
+                            isBusy = true;
+                        }
+                    });
                 }
 
                 @Override
                 public void closeAnketForm() {
-                    webView.loadUrl("https://www.sportmaster.ru/user/session/pda/register.do");
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d(TAG, "closeAnket");
+                            webView.loadUrl("https://www.sportmaster.ru/user/session/pda/register.do");
+                            isBusy = false;
+                        }
+                    });
                 }
             });
         } catch (IOException e) {
